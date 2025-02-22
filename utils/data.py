@@ -120,10 +120,19 @@ class data:
             user["total_saved_bookmarks"] = len(user["saved_bookmarks"])
             self._save_to_json(data)
 
+
     def get_current_bookmarks(self, user_id):
         data = self._load_from_json()
         user = next((u for u in data["users"] if u["id"] == user_id), None)
         return user["bookmarks"] if user else []
+
+
+    def get_missing_bookmarks(self, user_id):
+        data = self._load_from_json()
+        user = next((u for u in data["users"] if u["id"] == user_id), None)
+        if user:
+            return [bm for bm in user["bookmarks"] if bm not in user["saved_bookmarks"]]
+
 
     def _download_list_of_images(self, user_id, artwork_id, links, folder="."):
         try:

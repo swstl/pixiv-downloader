@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  pixiv:
+    image: dogfetus/pixiv-passive-downloader:latest
+    command: >
+      --save_path /app/data
+      --log_path /app/user
+      --cookies_path /app/user/cookies.json
+      --delay_min 60 
+      --delay_max 120 
+      --max_threads 5
+      --no_folder
+    volumes:
+      - ./data:/app/data
+      - ./user:/app/user
+    restart: unless-stopped 
+

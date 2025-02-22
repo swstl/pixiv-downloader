@@ -100,15 +100,14 @@ class pixivAPI:
             for i in (i for i in range(pages - 1) if not match):
                 self.web.goto(url + f"?p={i+2}") 
                 self.web.wait_for_element("XPATH", "//div[contains(@class, 'sc-rp5asc-9')]//img", 10)
-                bookmarks, match = self._get_artworks()
-                bookmarks.extend(bookmarks)
+                marks, match = self._get_artworks()
+                bookmarks.extend(marks)
 
             self.data.add_bookmarks(self.user.id, bookmarks)
             self.user.bookmarks.extend(bookmarks)
             self.user.total_bookmarks = len(self.user.bookmarks)
 
-            print(f"Found {self.user.total_bookmarks} new bookmarks\n")
-            print(f"Downloading bookmarks...{self.user.bookmarks}\n")
+            print(f"Downloading bookmarks...: {bookmarks}\n")
             if download and len(bookmarks):
                 self.download(bookmarks)
 
@@ -234,4 +233,10 @@ class pixivAPI:
         except Exception as e:
             print(f"Failed to download artwork {artwork}: {e}")
 
+
+    def download_missing_bookmarks(self):
+        missing = self.data.get_missing_bookmarks(self.user.id)
+        if missing:
+            print(f"Downloading {len(missing)} missing bookmarks {missing}", flush=True)
+            self.download(missing)
 
