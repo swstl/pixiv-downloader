@@ -61,14 +61,13 @@ class pixivAPI:
 
             #TODO: change to a list of all bookmarks and check if it exists
             if last_bookmark and last_bookmark in href:  
-                print(f"Found last bookmark {last_bookmark}\n")
                 return unique_links, True
 
             unique_links.append(href)
         return unique_links, False 
 
 
-    def new_bookmarks(self, user_id=None, download=True):
+    def fetch_new_bookmarks(self, user_id=None, download=True):
         bookmarks = []
         if user_id:
             id = user_id

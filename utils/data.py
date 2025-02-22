@@ -28,12 +28,12 @@ class data:
 
 
     def _save_to_json(self, data):
-        with self.lock, open(self.file_path, "w") as f:
+        with open(self.file_path, "w") as f:
             json.dump(data, f, indent=2)
 
 
     def _load_from_json(self):
-        with self.lock, open(self.file_path, "r") as f:
+        with open(self.file_path, "r") as f:
             return json.load(f)
 
 
@@ -144,7 +144,8 @@ class data:
                     print(f"Error downloading {link}: {e}")
 
             if successful_downloads == len(links):
-                self.add_saved_bookmark(user_id, artwork_id)
+                with self.lock:
+                    self.add_saved_bookmark(user_id, artwork_id)
             else:
                 print(f"Downloaded files for {artwork_id}: {successful_downloads}/{len(links)}.")
 
