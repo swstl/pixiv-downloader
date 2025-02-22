@@ -55,7 +55,7 @@ class pixivAPI:
     # finds all the artworks in the page (for bookmarks page)
     def _get_artworks(self):
         artworks = self.web.find_elements("TAG_NAME", "a")
-        last_bookmark = self.data.last_bookmark(self.user.id)
+        current_bookmarks = self.data.get_current_bookmarks(self.user.id)
         unique_links = [] 
 
         for link in artworks:
@@ -63,12 +63,18 @@ class pixivAPI:
             if not href or "/en/artworks/" not in href or href in unique_links:
                 continue
 
-            #TODO: change to a list of all bookmarks and check if it exists
-            if last_bookmark and last_bookmark in href:  
+            if current_bookmarks and self._extract_artworkid(href) in current_bookmarks:  
                 return unique_links, True
 
             unique_links.append(href)
         return unique_links, False 
+
+
+    def _extract_artworkid(self, url):
+        match = re.search(r'/artworks/(\d+)', url)
+        if match:
+            return int(match.group(1))
+        return None
 
 
     def fetch_new_bookmarks(self, user_id=None, download=True):
@@ -215,11 +221,7 @@ class pixivAPI:
             if isinstance(artwork, int):
                 artwork_id = artwork
             elif isinstance(artwork, str):
-                match = re.search(r'/artworks/(\d+)', artwork)
-                if not match:
-                    print(f"Invalid artwork URL: {artwork}")
-                    return
-                artwork_id = int(match.group(1))
+                artwork_id = self._extract_artworkid(artwork)
             else:
                 print(f"Unsupported artwork type: {type(artwork)}")
                 return
