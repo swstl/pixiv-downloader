@@ -1,15 +1,10 @@
 from utils.pixiv import pixivAPI
-import json
+from utils.config import config
 
-pixiv = pixivAPI()
+config = config()
+pixiv = pixivAPI(config)
+pixiv.login_with_cookies()
 
 
-def load_cookies(filepath):
-    with open(filepath, "r") as file:
-        return json.load(file)
+print(pixiv.fetch_new_bookmarks())
 
-# Load and convert cookies
-cookies = load_cookies("config/cookies.json")
-
-# Pass the cookies to the login function
-pixiv.login(cookies)

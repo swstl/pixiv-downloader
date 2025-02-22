@@ -1,18 +1,18 @@
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 import threading
 import json
 import re
 
 
 class data:
-    def __init__(self, web, path=None):
+    def __init__(self, web, config):
         self.web = web
-        self.path = path or Path(__file__).resolve().parents[1] / "data"
-        self.file_path = self.path / "saved.json"
+        self.config = config
+        self.path = self.config.save_path
+        self.file_path = self.config.log_path / "saved.json"
         self.path.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
-        self.executor = ThreadPoolExecutor(max_workers=5)
+        self.executor = ThreadPoolExecutor(max_workers=self.config.max_threads)
 
         if not self.file_path.exists():
             with open(self.file_path, "w") as f:
@@ -27,13 +27,13 @@ class data:
         return f"Data(path='{self.path}')"
 
 
-    def _save_to_json(self, data):
-        with open(self.file_path, "w") as f:
+    def _save_to_json(self, data, path=None):
+        with open(path or self.file_path, "w") as f:
             json.dump(data, f, indent=2)
 
 
-    def _load_from_json(self):
-        with open(self.file_path, "r") as f:
+    def _load_from_json(self, path=None):
+        with open(path or self.file_path, "r") as f:
             return json.load(f)
 
 
@@ -130,7 +130,7 @@ class data:
 
             for idx, link in enumerate(links):
                 try:
-                    response = self.web.request("GET", link, timeout=10)
+                    response = self.web.request("GET", link, timeout=self.config.timeout)
                     if response.status_code == 200:
                         file_extension = link.split('.')[-1].split('?')[0]
                         filename = target_folder / f"{artwork_id}_{idx}.{file_extension}"
@@ -151,6 +151,7 @@ class data:
 
         except Exception as e:
             print(f"Error handling artwork {artwork_id}: {e}")
+
 
     def download(self, userId, artwork_id, links: list, folder="."):
         data = self._load_from_json()

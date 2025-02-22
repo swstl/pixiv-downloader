@@ -1,6 +1,6 @@
-from utils.config import config
 from utils.data import data
 from utils.web import web
+import json
 import time
 import math
 import re
@@ -13,18 +13,22 @@ class user:
     bookmarks = []
 
 class pixivAPI:
-    def __init__(self):
+    def __init__(self, config):
         self.user = user()
-        self.config = config()
+        self.config = config 
         self.web = web()
-        self.data = data(self.web)
+        self.data = data(self.web, self.config)
 
 
     def __del__(self):
         self.web.stop()
 
-    def test(self):
-        self.data.add_saved_bookmark(self.user.id, 126537890)
+
+    def login_with_cookies(self):
+        with open(self.config.cookies_path, "r") as file:
+            cookies = json.load(file)
+        self.login(cookies)
+
 
     def login(self, cookies=None):
         if cookies:
@@ -142,7 +146,7 @@ class pixivAPI:
 
     def userId(self):
         url = "https://www.pixiv.net/dashboard" 
-        response = self.web.request("GET", url)
+        response = self.web.request("GET", url, timeout=self.config.timeout)
         match = re.search(r'"user_id":\s*"?(\d+)"?', response.text)
         if match:
             user.id = int(match.group(1))
@@ -195,7 +199,7 @@ class pixivAPI:
         return []
 
 
-    # artwork can either be a list of string or a single string or id
+    # artwork can either be a list of links, a single link or the id of the artwork 
     def download(self, artwork):
         if isinstance(artwork, list):
             for art in artwork:
@@ -220,7 +224,7 @@ class pixivAPI:
                 print(f"Unsupported artwork type: {type(artwork)}")
                 return
 
-            folder = str(artwork_id) if self.config.folder() else "."
+            folder = str(artwork_id) if self.config.folder else "."
             referer_url = f"https://www.pixiv.net/en/artworks/{artwork_id}"
             self.web.change_session_cookie("Referer", referer_url)
             self.data.download(self.user.id, artwork_id, links, folder)
