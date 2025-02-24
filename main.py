@@ -1,8 +1,21 @@
 from utils.pixiv import pixivAPI
 from utils.config import config
 from datetime import datetime
+import http.client as httplib
 import random
 import time
+
+
+def internet() -> bool:
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    try:
+        conn.request("HEAD", "/")
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
 
 def main():
     cfg = config()
@@ -10,13 +23,19 @@ def main():
     pixiv.login_with_cookies()
 
     while True:
-        bookmarks = pixiv.fetch_new_bookmarks()
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"Found {len(bookmarks)} new bookmarks at {current_time}.", flush=True)
-        delay = random.uniform(cfg.delay_min, cfg.delay_max)
+        if internet():
+            bookmarks = pixiv.fetch_new_bookmarks()
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"Found {len(bookmarks)} new bookmarks at {current_time}.", flush=True)
+        else:
+            print("No internet connection")
         # pixiv.download_missing_bookmarks()
+        delay = random.uniform(cfg.delay_min, cfg.delay_max)
         time.sleep(delay)
 
 if __name__ == "__main__":
+    if not internet():
+        print("No internet connection")
+        exit(1)
     main()
 

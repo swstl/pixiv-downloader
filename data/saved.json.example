@@ -1,0 +1,17 @@
+{
+  "users": [
+    {
+      "id": 12345678,
+      "total_bookmarks": 3,
+      "total_saved_bookmarks": 2,
+      "bookmarks": [
+        1234567,
+        2345678,
+        3456789
+      ],
+      "saved_bookmarks": [
+        1234567,
+        2345678
+      ]
+    }
+}

@@ -10,6 +10,7 @@ ARTWORKS_PER_PAGE = 48
 class user:
     id: int = 0  
     total_bookmarks: int = 0
+    nickname = ""
     bookmarks = []
 
 class pixivAPI:
@@ -32,12 +33,15 @@ class pixivAPI:
 
     def login(self, cookies=None):
         if cookies:
+            print("Setting cookies..." , end="", flush=True)
             url = "https://www.pixiv.net/"
             self.web.goto(url)
             self.web.set_cookies(cookies)
         else:
             # preperation
-            # TODO: Change to default browser
+            # TODO: change to default browser
+            # FIXME: this does not work 
+            print("Logging in...", end="", flush=True)
             url = "https://accounts.pixiv.net/login"
             self.web.goto(url)
             try:
@@ -48,8 +52,14 @@ class pixivAPI:
             except Exception as e:
                 print(f"User did not sign in {e}\n")
 
+        print("\b\b\b   [DONE]")
         self.userId()
+        if not self.user.id:
+            print("Failed to find user")
+            exit(1)
+
         self.data.add_user(self.user.id)
+        print(f"Logged in as user: {self.user.nickname or self.user.id}\n")
 
 
     # finds all the artworks in the page (for bookmarks page)
@@ -77,6 +87,7 @@ class pixivAPI:
         return None
 
 
+    # FIXME: this breaks when bookmanrks include gifs (or videos or what you wanna call them)
     def fetch_new_bookmarks(self, user_id=None, download=True):
         bookmarks = []
         if user_id:
@@ -87,9 +98,9 @@ class pixivAPI:
         try:
             self.web.goto(url)
             self.web.wait_for_element("XPATH", "//div[contains(@class, 'sc-rp5asc-9')]//img", 10)
-            bookmarks = self.web.find_element("XPATH", "//div[contains(@class, 'sc-1mr081w-0')]//span")
+            element = self.web.find_element("XPATH", "//div[contains(@class, 'sc-1mr081w-0')]//span")
 
-            total_bookmarks = int(bookmarks.text) 
+            total_bookmarks = int(element.text) 
             bookmarks, match = self._get_artworks() 
 
             if (len(bookmarks) == 0):
@@ -117,6 +128,7 @@ class pixivAPI:
         return bookmarks 
 
 
+    #FIXME: same as above
     def bookmarks(self, user_id=None):
         if user_id:
             id = user_id
@@ -152,10 +164,15 @@ class pixivAPI:
     def userId(self):
         url = "https://www.pixiv.net/dashboard" 
         response = self.web.request("GET", url, timeout=self.config.timeout)
-        match = re.search(r'"user_id":\s*"?(\d+)"?', response.text)
-        if match:
-            user.id = int(match.group(1))
-            return match.group(1)
+        id_match = re.search(r'"user_id":\s*"?(\d+)"?', response.text)
+        nicname_match = re.search(r'<div class="sc-4bc73760-3 jePfsr">\s*(.*?)\s*</div>', response.text)
+        
+        if nicname_match:
+            user.nickname = nicname_match.group(1)
+
+        if id_match:
+            user.id = int(id_match.group(1))
+            return id_match.group(1)
 
         url_match = re.search(r'/users/(\d+)', response.text)
         if url_match:
