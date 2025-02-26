@@ -34,7 +34,7 @@ class pixivAPI:
             print("Setting cookies..." , end="", flush=True)
             self.web.set_cookies(cookies)
         else:
-            print("Not supported yet")
+            print("Not supported yet", flush=True)
             # preperation
             # TODO: change to default browser
             # FIXME: this does not work 
@@ -49,14 +49,14 @@ class pixivAPI:
             # except Exception as e:
             #     print(f"User did not sign in {e}\n")
 
-        print("\b\b\b   [DONE]")
+        print("\b\b\b   [DONE]", flush=True)
         self.userId()
         if not self.user.id:
-            print("Failed to find user")
+            print("Failed to find user", flush=True)
             exit(1)
 
         self.data.add_user(self.user.id)
-        print(f"Logged in as user: {self.user.nickname or self.user.id}\n")
+        print(f"Logged in as user: {self.user.nickname or self.user.id}\n", flush=True)
 
 
     def _extract_artworkid(self, url):
@@ -107,7 +107,7 @@ class pixivAPI:
                         found_in_bookmarks = True
 
         except Exception as e:
-            print(f"Failed to get bookmarks {e}\n")
+            print(f"Failed to get bookmarks {e}\n", flush=True)
 
         self.data.add_bookmarks(id, bookmarks)
         return bookmarks, total_bookmarks
@@ -134,7 +134,7 @@ class pixivAPI:
                 bookmarks.extend([int(work["id"]) for work in json_data["body"]["works"]])
 
         except Exception as e:
-            print(f"Failed to get bookmarks {e}\n")
+            print(f"Failed to get bookmarks {e}\n", flush=True)
 
         return self.user.bookmarks 
 
@@ -160,11 +160,6 @@ class pixivAPI:
         return 0 
 
 
-    def test(self, artworkId):
-        return self.download(artworkId)
-        return self._extract_img_links(artworkId)
-
-
     # Extracts image links from the artwork page
     def _extract_img_links(self, artworkId):
         links = []
@@ -172,11 +167,18 @@ class pixivAPI:
         try:
             response = self.web.request("GET", url, timeout=self.config.timeout)
             json_data = json.loads(response.text)
+
+            # skip ids which are removed or hidden:
+            if not json_data["body"]:
+                self.data.add_saved_bookmark(self.user.id, artworkId)
+                print(f"Artwork {artworkId} is removed or hidden", flush=True)
+                return [-1]
+
             for page in json_data["body"]:
                 if page["urls"]["original"]:
                     links.append(page["urls"]["original"])
         except Exception as e:
-            print(f"Failed to get image links for id: {artworkId} | {e}\n")
+            print(f"Failed to get image links for id: {artworkId} | {e}\n", flush=True)
 
         return links
 
@@ -195,19 +197,19 @@ class pixivAPI:
             elif isinstance(artwork, str):
                 artwork_id = self._extract_artworkid(artwork) 
             else:
-                print(f"Unsupported artwork type: {type(artwork)}")
+                print(f"Unsupported artwork type: {type(artwork)}", flush=True)
                 return
 
             links = self._extract_img_links(artwork_id)
             if not links:
-                print(f"No image links found for artwork: {artwork_id}")
+                print(f"No image links found for artwork: {artwork_id}", flush=True)
                 return
 
             folder = str(artwork_id) if self.config.folder else "."
             self.data.download(self.user.id or self.userId(), artwork_id, links, folder)
 
         except Exception as e:
-            print(f"Failed to download artwork {artwork}: {e}")
+            print(f"Failed to download artwork {artwork}: {e}", flush=True)
 
 
     def download_missing_bookmarks(self):

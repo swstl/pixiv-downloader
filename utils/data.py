@@ -50,8 +50,6 @@ class data:
         if not new_bookmarks:
             return
 
-        print(new_bookmarks)
-
         user['bookmarks'] = new_bookmarks + user['bookmarks']
         user['total_bookmarks'] = len(user['bookmarks'])
 
@@ -98,7 +96,7 @@ class data:
                 user["total_saved_bookmarks"] = len(user["saved_bookmarks"])
                 self._save_to_json(data)
         else:
-            print(f"User with ID {user_id} not found in JSON.")
+            print(f"User with ID {user_id} not found in JSON.", flush=True)
 
 
     def remove_bookmarks(self, user_id, bookmarks):
@@ -172,20 +170,20 @@ class data:
                                 f.write(response.content)
                             successful_downloads += 1
                         else:
-                            print(f"Failed to download {link} (Status: {response.status_code})")
+                            print(f"Failed to download {link} (Status: {response.status_code})", flush=True)
 
                 except Exception as e:
-                    print(f"Error downloading {link}: {e}")
+                    print(f"Error downloading {link}: {e}", flush=True)
 
             if successful_downloads == len(links):
                 with self.lock:
                     self.add_saved_bookmark(user_id, artwork_id)
-                print(f"Finished downloading {artwork_id}.")
+                print(f"Finished downloading {artwork_id}.", flush=True)
             else:
-                print(f"Downloaded files for {artwork_id}: {successful_downloads}/{len(links)}.")
+                print(f"Downloaded files for {artwork_id}: {successful_downloads}/{len(links)}.", flush=True)
 
         except Exception as e:
-            print(f"Error handling artwork {artwork_id}: {e}")
+            print(f"Error handling artwork {artwork_id}: {e}", flush=True)
 
 
     def download(self, userId, artwork_id, links: list, folder="."):

@@ -31,13 +31,13 @@ def main():
             pixiv.download_missing_bookmarks()
             print("Done", flush=True)
         else:
-            print("No internet connection")
+            print("No internet connection", flush=True)
         delay = random.uniform(cfg.delay_min, cfg.delay_max)
         time.sleep(delay)
 
 if __name__ == "__main__":
     if not internet():
-        print("No internet connection")
+        print("No internet connection", flush=True)
         exit(1)
     main()
 
