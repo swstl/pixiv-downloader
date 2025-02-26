@@ -7,6 +7,7 @@ import re
 ARTWORKS_PER_PAGE = 48  
 BM_URL = "https://www.pixiv.net/ajax/user/{}/illusts/bookmarks?tag=&offset={}&limit=100&rest=show&lang=en"
 AW_PAGES_URL = "https://www.pixiv.net/ajax/illust/{}/pages"
+PROFILE_URL = "https://www.pixiv.net/ajax/user/{}/profile/all"
 
 
 class user:
@@ -111,6 +112,20 @@ class pixivAPI:
 
         self.data.add_bookmarks(id, bookmarks)
         return bookmarks, total_bookmarks
+
+
+    def user_illusts(self, user_id=None, target_user=None):
+        if user_id:
+            id = user_id
+        else:
+            id = self.user.id or self.userId()
+        url = PROFILE_URL.format(target_user)
+        response = self.web.request("GET", url, timeout=self.config.timeout)
+        illust_pairs = json.loads(response.text)["body"]["illusts"]
+        illusts = [int(illust) for illust in illust_pairs.keys()]
+
+        self.data.add_bookmarks(id, illusts)
+        return illusts
 
 
     def bookmarks(self, user_id=None):
