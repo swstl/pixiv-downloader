@@ -147,8 +147,8 @@ class data:
                     if "ugoira" in link:
                         ugoira = self.web.request("GET", UGOIRA_URL.format(artwork_id), timeout=self.config.timeout).json()
                         zip_url = ugoira["body"]["originalSrc"]
-                        zip_data = self.web.request("GET", zip_url, timeout=self.config.timeout)
-                        zip_bytes = io.BytesIO(zip_data.content)
+                        zip_data = self.web.request("GET", zip_url, stream=True, timeout=self.config.timeout)
+                        zip_bytes = io.BytesIO(zip_data.raw.read())
 
                         with zipfile.ZipFile(zip_bytes) as z:
                             frames = [
@@ -167,12 +167,12 @@ class data:
                         successful_downloads += 1
 
                     else:
-                        response = self.web.request("GET", link, timeout=self.config.timeout)
+                        response = self.web.request("GET", link, stream=True, timeout=self.config.timeout)
                         if response.status_code == 200:
                             file_extension = link.split('.')[-1].split('?')[0]
                             filename = target_folder / f"{artwork_id}_{idx}.{file_extension}"
                             with open(filename, "wb") as f:
-                                f.write(response.content)
+                                f.write(response.raw.read())
                             successful_downloads += 1
                         else:
                             print(f"Failed to download {link} (Status: {response.status_code})", flush=True)

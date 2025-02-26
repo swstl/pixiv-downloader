@@ -1,6 +1,10 @@
+from requests.exceptions import ChunkedEncodingError, ConnectionError
 from requests.adapters import HTTPAdapter
+from http.client import IncompleteRead
 from urllib3.util.retry import Retry
 import requests
+import time
+import io
 
 class web:
     def __init__(self, ):
@@ -11,7 +15,7 @@ class web:
             "Referer": "https://www.pixiv.net/"
         })
         retries = Retry(
-            total=10, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504]
+            total=10, connect=10, read=10, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504]
         )
         self.session.mount("http://", HTTPAdapter(max_retries=retries))
         self.session.mount("https://", HTTPAdapter(max_retries=retries))
@@ -22,7 +26,20 @@ class web:
         try:
             response = methods[method](url, **kwargs)
             response.raise_for_status()
+
+            if kwargs.get("stream"):
+                content = io.BytesIO()
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        content.write(chunk)
+                content.seek(0)
+                response.raw = content
+
             return response
+
+        except (ChunkedEncodingError, ConnectionError, IncompleteRead):
+            time.sleep(0.5)
+            return self.request(method, url, **kwargs)
         except requests.exceptions.HTTPError as http_err:
             return http_err.response
 
