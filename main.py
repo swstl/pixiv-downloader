@@ -24,12 +24,13 @@ def main():
 
     while True:
         if internet():
-            bookmarks = pixiv.fetch_new_bookmarks()
+            bookmarks, total_bookmarks = pixiv.fetch_new_bookmarks()
+            pixiv.download(bookmarks)
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"Found {len(bookmarks)} new bookmarks at {current_time}.", flush=True)
+            print(f"Found {len(bookmarks)} new (total: {total_bookmarks}) bookmarks at {current_time}: {bookmarks}", flush=True)
+            pixiv.download_missing_bookmarks()
         else:
             print("No internet connection")
-        # pixiv.download_missing_bookmarks()
         delay = random.uniform(cfg.delay_min, cfg.delay_max)
         time.sleep(delay)
 

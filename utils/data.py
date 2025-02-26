@@ -1,7 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
 import threading
+import zipfile
+import atexit
 import json
-import re
+import io
+
+UGOIRA_URL = "https://www.pixiv.net/ajax/illust/{}/ugoira_meta"
 
 
 class data:
@@ -13,14 +18,11 @@ class data:
         self.path.mkdir(parents=True, exist_ok=True)
         self.lock = threading.Lock()
         self.executor = ThreadPoolExecutor(max_workers=self.config.max_threads)
+        atexit.register(self.executor.shutdown)
 
         if not self.file_path.exists():
             with open(self.file_path, "w") as f:
                 json.dump({"users": []}, f, indent=2)
-
-
-    def __del__(self):
-        self.executor.shutdown()
 
 
     def __repr__(self):
@@ -44,15 +46,11 @@ class data:
         if not user:
             return
 
-        ids = []
-        for bm in bookmarks:
-            match = re.search(r'/artworks/(\d+)', bm)
-            if match:
-                ids.append(int(match.group(1)))
-
-        new_bookmarks = [bm for bm in ids if bm not in user['bookmarks']]
+        new_bookmarks = [bm for bm in bookmarks if bm not in user['bookmarks']]
         if not new_bookmarks:
             return
+
+        print(new_bookmarks)
 
         user['bookmarks'] = new_bookmarks + user['bookmarks']
         user['total_bookmarks'] = len(user['bookmarks'])
@@ -124,7 +122,7 @@ class data:
     def get_current_bookmarks(self, user_id):
         data = self._load_from_json()
         user = next((u for u in data["users"] if u["id"] == user_id), None)
-        return user["bookmarks"] if user else []
+        return (user["bookmarks"], user["total_bookmarks"]) if user else []
 
 
     def get_missing_bookmarks(self, user_id):
@@ -143,15 +141,38 @@ class data:
 
             for idx, link in enumerate(links):
                 try:
-                    response = self.web.request("GET", link, timeout=self.config.timeout)
-                    if response.status_code == 200:
-                        file_extension = link.split('.')[-1].split('?')[0]
-                        filename = target_folder / f"{artwork_id}_{idx}.{file_extension}"
-                        with open(filename, "wb") as f:
-                            f.write(response.content)
+                    if "ugoira" in link:
+                        ugoira = self.web.request("GET", UGOIRA_URL.format(artwork_id), timeout=self.config.timeout).json()
+                        zip_url = ugoira["body"]["originalSrc"]
+                        zip_data = self.web.request("GET", zip_url, timeout=self.config.timeout)
+                        zip_bytes = io.BytesIO(zip_data.content)
+
+                        with zipfile.ZipFile(zip_bytes) as z:
+                            frames = [
+                                (Image.open(z.open(f["file"])).convert("RGBA"), f["delay"])
+                                for f in ugoira["body"]["frames"]
+                            ]
+
+                        frames, delays = zip(*frames)
+                        frames[0].save(
+                            target_folder / f"{artwork_id}.gif",
+                            save_all=True,
+                            append_images=frames[1:],
+                            duration=delays,
+                            loop=0,
+                        )
                         successful_downloads += 1
+
                     else:
-                        print(f"Failed to download {link} (Status: {response.status_code})")
+                        response = self.web.request("GET", link, timeout=self.config.timeout)
+                        if response.status_code == 200:
+                            file_extension = link.split('.')[-1].split('?')[0]
+                            filename = target_folder / f"{artwork_id}_{idx}.{file_extension}"
+                            with open(filename, "wb") as f:
+                                f.write(response.content)
+                            successful_downloads += 1
+                        else:
+                            print(f"Failed to download {link} (Status: {response.status_code})")
 
                 except Exception as e:
                     print(f"Error downloading {link}: {e}")
@@ -159,6 +180,7 @@ class data:
             if successful_downloads == len(links):
                 with self.lock:
                     self.add_saved_bookmark(user_id, artwork_id)
+                print(f"Finished downloading {artwork_id}.")
             else:
                 print(f"Downloaded files for {artwork_id}: {successful_downloads}/{len(links)}.")
 
