@@ -11,6 +11,7 @@ UGOIRA_URL = "https://www.pixiv.net/ajax/illust/{}/ugoira_meta"
 
 class data:
     def __init__(self, web, config):
+        self.threads = []
         self.web = web
         self.config = config
         self.path = self.config.save_path
@@ -191,8 +192,10 @@ class data:
             print(f"Error handling artwork {artwork_id}: {e}", flush=True)
 
 
+
     def download(self, userId, artwork_id, links: list, folder="."):
         data = self._load_from_json()
         user = next((u for u in data["users"] if u["id"] == userId), None)
         if user and artwork_id not in user["saved_bookmarks"]:
-            self.executor.submit(self._download_list_of_images, userId, artwork_id, links, folder)
+            thread = self.executor.submit(self._download_list_of_images, userId, artwork_id, links, folder)
+            self.threads.append(thread)

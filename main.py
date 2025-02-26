@@ -1,3 +1,4 @@
+from concurrent.futures import wait
 from utils.pixiv import pixivAPI
 from utils.config import config
 from datetime import datetime
@@ -26,14 +27,26 @@ def main():
     while True:
         if internet():
             print("Fetching bookmarks...", flush=True)
+
             bookmarks, total_bookmarks = pixiv.fetch_new_bookmarks()
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             print(f"Found {len(bookmarks)} new (total: {total_bookmarks}) bookmarks at {current_time}: {bookmarks}", flush=True)
-            pixiv.download(bookmarks)
+
+            if len(bookmarks) > 0:
+                print("Downloading bookmarks...", flush=True)
+
+                pixiv.download(bookmarks)
+                wait(pixiv.data.threads)
+
+                print("Done", flush=True)
+
             pixiv.download_missing_bookmarks()
-            print("Done", flush=True)
+
         else:
             print("No internet connection", flush=True)
+
+        # Sleep for a random amount of time
         delay = random.uniform(cfg.delay_min, cfg.delay_max)
         time.sleep(delay)
 

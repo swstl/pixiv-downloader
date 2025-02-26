@@ -22,6 +22,10 @@ This project provides a passive tool that occasionally checks for new bookmarks 
 ```bash
 python main.py [OPTIONS]
 ```
+or run using nohup:
+```bash
+nohup python main.py [OPTIONS] > /dev/null 2>&1 &
+```
 
 ### CLI Options:
 | Option            | Type   | Description                                                    |
@@ -32,12 +36,12 @@ python main.py [OPTIONS]
 | `--no_folder`     | flag   | Disables saving artworks in separate folders.                  |
 | `--delay_min`     | int    | Minimum delay between bookmark checks (default: 60 seconds).   |
 | `--delay_max`     | int    | Maximum delay between bookmark checks (default: 120 seconds).  |
-| `--timeout`       | int    | Request timeout in seconds (default: 10 seconds).              |
+| `--timeout`       | int    | Request timeout in seconds (default: 60 seconds).              |
 | `--max_threads`   | int    | Maximum concurrent download threads.                           |
 
 ### Example Command:
 ```bash
-python main.py --save_path ./downloads --cookies_path ./cookies.json --delay_min 30 --delay_max 90
+python main.py --save_path ./downloads --cookies_path ./cookies.json --delay_min 60 --delay_max 120
 ```
 
 ## OR Run with docker compose
@@ -55,11 +59,24 @@ services:
       --delay_min 60 
       --delay_max 120 
       --max_threads 5
-      --no_folder
     volumes:
-      - <path to folder to store bookmarks>:/app/data
+      - ./data:/app/data
       - .:/app/user
     restart: unless-stopped 
+```
+
+File structure for this compose.yaml (must have):
+```bash
+└── <project name>
+    ├── cookies.json
+    └── compose.yaml
+```
+ (cookies should be there before running the compose file)
+
+Run the compose.yaml with:
+
+```bash
+docker compose up -d
 ```
 
 ---

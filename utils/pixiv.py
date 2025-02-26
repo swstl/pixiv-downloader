@@ -215,5 +215,6 @@ class pixivAPI:
     def download_missing_bookmarks(self):
         missing = self.data.get_missing_bookmarks(self.user.id)
         if missing:
+            print(f"Found {len(missing)} missing bookmarks, downloading...", flush=True)
             self.download(missing)
 
