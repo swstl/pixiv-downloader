@@ -11,7 +11,7 @@ class web:
             "Referer": "https://www.pixiv.net/"
         })
         retries = Retry(
-            total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
+            total=10, backoff_factor=0.3, status_forcelist=[500, 502, 503, 504]
         )
         self.session.mount("http://", HTTPAdapter(max_retries=retries))
         self.session.mount("https://", HTTPAdapter(max_retries=retries))

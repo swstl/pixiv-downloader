@@ -11,7 +11,7 @@ class config:
         self._max_threads = self.cli_args.max_threads if self.cli_args.max_threads else 5
         self._delay_min = self.cli_args.delay_min if self.cli_args.delay_min else 60
         self._delay_max = self.cli_args.delay_max if self.cli_args.delay_max else 120
-        self._timeout = self.cli_args.timeout if self.cli_args.timeout else 10
+        self._timeout = self.cli_args.timeout if self.cli_args.timeout else 60
         self._cookies_path = self.cli_args.cookies_path if self.cli_args.cookies_path else Path(__file__).resolve().parents[1] / "user" / "cookies.json"
         self._max_threads = self.cli_args.max_threads if self.cli_args.max_threads else 5
 
