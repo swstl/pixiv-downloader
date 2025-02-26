@@ -111,7 +111,8 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 - Pixiv for providing the platform.
-- Selenium and Requests libraries for web automation and API handling.
+- Requests libraries for web automation and API handling.
+- PIL to store frames as gif.
 
 > **Disclaimer:** This tool is intended for personal use.
 
