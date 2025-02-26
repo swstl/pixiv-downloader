@@ -170,7 +170,7 @@ class pixivAPI:
 
             # skip ids which are removed or hidden:
             if not json_data["body"]:
-                self.data.add_saved_bookmark(self.user.id, artworkId)
+                self.data.wait_and_add_saved_bookmark(self.user.id, artworkId)
                 print(f"Artwork {artworkId} is removed or hidden", flush=True)
                 return [-1]
 

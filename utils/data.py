@@ -85,6 +85,11 @@ class data:
         self._save_to_json(data)
 
 
+    def wait_and_add_saved_bookmark(self, user_id, artwork_id):
+        with self.lock:
+            self.add_saved_bookmark(user_id, artwork_id)
+
+
     def add_saved_bookmark(self, user_id, artwork_id):
         """Adds the artwork ID to the saved bookmarks of the user in the JSON file."""
         data = self._load_from_json()

@@ -19,9 +19,12 @@ class web:
 
     def request(self, method, url, **kwargs):
         methods = {"GET": self.session.get, "POST": self.session.post}
-        response = methods[method](url, **kwargs)
-        response.raise_for_status()
-        return response
+        try:
+            response = methods[method](url, **kwargs)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.HTTPError as http_err:
+            return http_err.response
 
 
     def change_session_cookie(self, name, value):
