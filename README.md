@@ -30,14 +30,14 @@ nohup python main.py [OPTIONS] > /dev/null 2>&1 &
 ### CLI Options:
 | Option            | Type   | Description                                                    |
 |-------------------|--------|----------------------------------------------------------------|
-| `--save_path`     | string | Path to save downloaded artworks.                              |
-| `--log_path`      | string | Path to save JSON logs.                                       |
-| `--cookies_path`  | string | Path to user cookies JSON file for Pixiv login.                |
+| `--save_path`     | string | Path to save downloaded artworks. (default: ./data)            |
+| `--log_path`      | string | Path to save JSON logs. (default: ./data)                      |
+| `--cookies_path`  | string | Path to user cookies JSON file for Pixiv login. (default: ./user)|
 | `--no_folder`     | flag   | Disables saving artworks in separate folders.                  |
 | `--delay_min`     | int    | Minimum delay between bookmark checks (default: 60 seconds).   |
 | `--delay_max`     | int    | Maximum delay between bookmark checks (default: 120 seconds).  |
 | `--timeout`       | int    | Request timeout in seconds (default: 60 seconds).              |
-| `--max_threads`   | int    | Maximum concurrent download threads.                           |
+| `--max_threads`   | int    | Maximum concurrent download threads. (default: 5)              |
 
 ### Example Command:
 ```bash
