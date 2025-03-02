@@ -1,7 +1,6 @@
 from concurrent.futures import wait
 from utils.pixiv import pixivAPI
 from utils.config import config
-from datetime import datetime
 import http.client as httplib
 import random
 import time
@@ -29,7 +28,7 @@ def main():
             print("Fetching bookmarks...", flush=True)
 
             bookmarks, total_bookmarks = pixiv.fetch_new_bookmarks()
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
             print(f"Found {len(bookmarks)} new (total: {total_bookmarks}) bookmarks at {current_time}: {bookmarks}", flush=True)
 
