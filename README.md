@@ -108,7 +108,7 @@ This program uses cookies to fetch the bookmarks from the user (to log in as the
 ]
 ```
 
-> **Note:** Cookies are essential for login (to fetch the bookmarks for a user). Use a browser extension like [cookie-editor](https://cookie-editor.com/) to export cookies.
+> **Note:** Cookies are essential for login (to fetch certain bookmarks). Use a browser extension like [cookie-editor](https://cookie-editor.com/) to export cookies.
 
 
 ---
