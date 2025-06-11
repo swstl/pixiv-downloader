@@ -134,3 +134,5 @@ MIT License. See [LICENSE](LICENSE) for details.
 > **Disclaimer:** This tool is intended for personal use.
 
 
+## Debugging 
+- requests.exceptions.TooManyRedirects: Exceeded 30 redirects. (try updating your cookies)
