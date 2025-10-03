@@ -10,7 +10,7 @@ This project provides a passive tool that occasionally checks for new bookmarks 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Dogfetus/pixiv-downloader.git
+   git clone https://github.com/swstl/pixiv-downloader.git
    cd pixiv-downloader
    ```
 2. Install dependencies:
@@ -51,7 +51,7 @@ version: "3.8"
 
 services:
   pixiv:
-    image: dogfetus/pixiv-passive-downloader:latest
+    image: swstl/pixiv-passive-downloader:latest
     command: >
       --save_path /app/data
       --log_path /app/user
